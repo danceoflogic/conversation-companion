@@ -1,7 +1,7 @@
 import './load-env.js';
 
 const DEFAULT_CONTEXT_WINDOW_ITEMS = Number(process.env.CONTEXT_WINDOW_ITEMS || 3);
-const DEFAULT_CONTEXT_PROVIDER = process.env.CONTEXT_PROVIDER || 'ollama';
+const DEFAULT_CONTEXT_PROVIDER = process.env.CONTEXT_PROVIDER || 'heuristic';
 const DEFAULT_OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
 const DEFAULT_OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:8b';
 const DEFAULT_OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS || 8000);
@@ -15,7 +15,9 @@ const STOPWORDS = new Set([
   'he', 'her', 'him', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'just', 'me',
   'my', 'of', 'on', 'or', 'our', 'she', 'so', 'that', 'the', 'their', 'them', 'there', 'they',
   'this', 'to', 'up', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'who', 'why',
-  'will', 'with', 'you', 'your'
+  'will', 'with', 'you', 'your',
+  'can', 'cannot', 'could', 'would', 'should', 'also', 'just', 'really', 'like', 'get', 'got', 'going', 'make', 'made',
+  'using', 'use', 'used', 'item', 'items', 'action', 'next', 'month', 'year', 'years', 'team', 'project', 'report', 'publish'
 ]);
 
 function normaliseWhitespace(text) {
@@ -24,6 +26,16 @@ function normaliseWhitespace(text) {
 
 function toTitleCase(text) {
   return text.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function canonicalKeyword(word) {
+  const cleaned = String(word || '').toLowerCase();
+
+  if (cleaned.length >= 5 && cleaned.endsWith('s') && !cleaned.endsWith('ss')) {
+    return cleaned.slice(0, -1);
+  }
+
+  return cleaned;
 }
 
 function getContextWindowItems(store, windowSize = DEFAULT_CONTEXT_WINDOW_ITEMS) {
@@ -46,8 +58,9 @@ function collectKeywordCounts(items) {
       .match(/[a-z][a-z'-]{2,}/g) || [];
 
     for (const word of words) {
-      if (STOPWORDS.has(word)) continue;
-      counts.set(word, (counts.get(word) || 0) + 1);
+      const keyword = canonicalKeyword(word);
+      if (STOPWORDS.has(keyword)) continue;
+      counts.set(keyword, (counts.get(keyword) || 0) + 1);
     }
   }
 

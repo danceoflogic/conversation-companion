@@ -168,12 +168,20 @@ async function main() {
   });
 
   let stderr = '';
+  let serverStartError = null;
   server.stderr.on('data', (chunk) => {
     stderr += chunk.toString();
+  });
+  server.on('error', (error) => {
+    serverStartError = error;
   });
 
   try {
     await waitForServer(`${baseUrl}/api/mock-session`);
+
+    if (serverStartError) {
+      throw new Error(`Server failed to start: ${serverStartError.message}`);
+    }
 
     const lines = [];
     await verifyFixtures(lines);
@@ -185,8 +193,10 @@ async function main() {
     }
     console.log('Warning-path expectation: only fixture=invalid should produce validation warnings.');
   } finally {
-    server.kill('SIGTERM');
-    await new Promise((resolve) => server.once('exit', resolve));
+    if (server.exitCode === null) {
+      server.kill('SIGTERM');
+      await new Promise((resolve) => server.once('exit', resolve));
+    }
     if (stderr.trim()) {
       process.stderr.write(stderr);
     }

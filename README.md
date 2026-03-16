@@ -53,10 +53,23 @@ The first implementation focus is a **Study / Tutoring Companion** vertical beca
 - Run `npm run capture:local` to capture a short local audio sample, transcribe it with Whisper, POST it to `http://127.0.0.1:3088/api/transcript-ingestion`, and verify that the ingested item is present in the local transcript store.
 - Useful overrides: `CAPTURE_DURATION=3`, `WHISPER_MODEL=tiny`, `SPEAKER_NAME=Chris`, `AUDIO_SOURCE=alsa_input.usb-046d_HD_Pro_Webcam_C920_8185B3DF-02.analog-stereo`.
 
+## Quickstart (fresh environment)
+1. Install Node.js 22+.
+2. Install dependencies: `npm install`.
+3. Copy `.env.example` to `.env.local` and fill in required values (the default provider is `heuristic` for zero-config startup).
+4. Start the app with `npm run dev`.
+5. Open `http://127.0.0.1:3088`.
+
+### Minimum working modes
+- **UI + mock fixtures only**: no extra dependencies required.
+- **Live transcript ingest path**: dev server plus `POST /api/transcript-ingestion` (scripts can do this for you).
+- **Full local capture + transcription**: requires local capture tools and a working transcription backend (`whisper.cpp` binaries/models are not bundled in this repo export).
+- **AI context enrichment**: requires `OPENAI_API_KEY` (or Ollama config if using that provider).
+- Quick temporary local test: `OPENAI_API_KEY=... CONTEXT_PROVIDER=openai npm run dev`.
+
 ## Local transcript context summary
-- `GET /api/transcript-context` returns compact structured JSON derived from the stored transcript items.
-- Optional query param: `window=<n>` limits summarisation to the latest `n` items (default `6`, max `50`).
-- Run `npm run verify:context` against a running dev server to verify the endpoint shape and that it returns topic/summary/latest-utterance data.
+- `GET /api/context-understanding` returns structured context JSON derived from stored transcript items (provider-backed when configured, heuristic fallback otherwise).
+- Run `npm run verify:context` against a running dev server to verify endpoint shape and topic/summary/latest-utterance output.
 
 ## Fixture sanity check
 - Run `npm run verify:fixtures` (or `npm run verify`) to verify the default, invalid, and geometry mock-session endpoints, the local transcript-ingestion path, and the understanding-layer merge that keeps context summary/timeline output aligned with UI widget availability.
