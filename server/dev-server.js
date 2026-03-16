@@ -171,7 +171,9 @@ function startRecordingCycle() {
       return;
     }
 
-    finishLiveCapture('error', liveCaptureState.stderr.trim() || `Capture failed with exit code ${code}`, {
+    const rawError = liveCaptureState.stderr.trim() || `Capture failed with exit code ${code}`;
+    finishLiveCapture('error', buildCaptureErrorMessage(rawError), {
+      stderr: rawError,
       audioFile
     });
   });
@@ -384,6 +386,12 @@ async function buildConceptFocusPayload(concept, mode = 'found') {
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const isOverviewLike = safeConcept.toLowerCase() === 'context overview' || safeConcept.toLowerCase() === String(topic).trim().toLowerCase();
+  const broadConceptHints = new Set([
+    'overview', 'context', 'summary', 'discussion', 'session', 'topic', 'conversation', 'notes', 'study', 'learning'
+  ]);
+  const conceptTokens = (safeConcept.toLowerCase().match(/[a-z][a-z'-]{2,}/g) || []);
+  const isBroadConcept = isOverviewLike
+    || (conceptTokens.length > 0 && conceptTokens.every((token) => broadConceptHints.has(token)));
   const relatedConcepts = Array.isArray(context?.concepts)
     ? context.concepts
       .map((item) => String(item || '').trim())
@@ -458,6 +466,17 @@ async function buildConceptFocusPayload(concept, mode = 'found') {
         title: `${safeConcept} generated view ${index + 1}`,
         source: 'AI generated'
       }))
+    };
+  }
+
+  if (isBroadConcept) {
+    return {
+      concept: safeConcept,
+      topic,
+      mode,
+      summary: `${conceptSummary} This concept is broad, so this view is text-first to avoid low-quality image matches.`,
+      images: [],
+      textFirst: true
     };
   }
 
@@ -572,7 +591,8 @@ async function buildConceptFocusPayload(concept, mode = 'found') {
     topic,
     mode,
     summary: conceptSummary,
-    images
+    images,
+    textFirst: images.length === 0
   };
 }
 
@@ -608,6 +628,29 @@ function readJsonBody(req) {
 
     req.on('error', reject);
   });
+}
+
+
+function buildCaptureErrorMessage(rawMessage) {
+  const text = String(rawMessage || '').trim();
+
+  if (!text) {
+    return 'Capture failed. Check local audio/transcription dependencies.';
+  }
+
+  if (text.includes('Missing required command: pactl')) {
+    return 'Capture failed: missing PulseAudio tooling (pactl). Install audio capture dependencies or use manual transcript ingestion.';
+  }
+
+  if (text.includes('Audio file missing or empty')) {
+    return 'Capture failed: no usable audio was recorded. Check microphone source/device settings.';
+  }
+
+  if (text.includes('OPENAI_API_KEY')) {
+    return 'Context provider key is missing. Set OPENAI_API_KEY or switch CONTEXT_PROVIDER=heuristic.';
+  }
+
+  return text;
 }
 
 function cleanupLiveCaptureOnExit() {
