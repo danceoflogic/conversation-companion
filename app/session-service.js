@@ -22,7 +22,9 @@ const STOPWORDS = new Set([
   'he', 'her', 'him', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'just', 'me',
   'my', 'of', 'on', 'or', 'our', 'she', 'so', 'that', 'the', 'their', 'them', 'there', 'they',
   'this', 'to', 'up', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'who', 'why',
-  'will', 'with', 'you', 'your'
+  'will', 'with', 'you', 'your',
+  'can', 'cannot', 'could', 'would', 'should', 'also', 'just', 'really', 'like', 'get', 'got', 'going', 'make', 'made',
+  'using', 'use', 'used', 'item', 'items', 'action', 'next', 'month', 'year', 'years', 'team', 'project', 'report', 'publish'
 ]);
 
 function getFixtureParam() {
@@ -80,6 +82,16 @@ function toTitleCase(text) {
   return text.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 
+function canonicalKeyword(word) {
+  const cleaned = String(word || '').toLowerCase();
+
+  if (cleaned.length >= 5 && cleaned.endsWith('s') && !cleaned.endsWith('ss')) {
+    return cleaned.slice(0, -1);
+  }
+
+  return cleaned;
+}
+
 function collectKeywordCounts(items) {
   const counts = new Map();
 
@@ -89,8 +101,9 @@ function collectKeywordCounts(items) {
       .match(/[a-z][a-z'-]{2,}/g) || [];
 
     for (const word of words) {
-      if (STOPWORDS.has(word)) continue;
-      counts.set(word, (counts.get(word) || 0) + 1);
+      const keyword = canonicalKeyword(word);
+      if (STOPWORDS.has(keyword)) continue;
+      counts.set(keyword, (counts.get(keyword) || 0) + 1);
     }
   }
 
@@ -165,7 +178,10 @@ function buildTranscriptContextUnderstanding(transcriptStore, baseSession) {
 }
 
 function buildContextWidgets(contextUnderstanding, baseWidgets = []) {
-  const widgets = Array.isArray(baseWidgets) ? [...baseWidgets] : [];
+  const dynamicTypes = new Set(['open_questions', 'action_items', 'decisions']);
+  const widgets = Array.isArray(baseWidgets)
+    ? baseWidgets.filter((widget) => !dynamicTypes.has(widget?.type))
+    : [];
 
   if (Array.isArray(contextUnderstanding?.decisions) && contextUnderstanding.decisions.length) {
     widgets.unshift({
@@ -260,10 +276,10 @@ function mergeTranscriptIngestion(baseSession, transcriptStore, contextUnderstan
       providerMode,
       latencyMs: 0
     },
-    topic: mergedContext.topic || baseSession?.topic || 'Live Transcript',
-    summary: mergedContext.summary || `Displaying ${items.length} ingested transcript item${items.length === 1 ? '' : 's'} from /api/transcript-ingestion.`,
+    topic: baseSession?.topic || mergedContext.topic || 'Live Transcript',
+    summary: `Displaying ${items.length} ingested transcript item${items.length === 1 ? '' : 's'} from /api/transcript-ingestion.${mergedContext.summary ? ` ${mergedContext.summary}` : ''}`,
     timeline,
-    widgets: buildContextWidgets(mergedContext),
+    widgets: buildContextWidgets(mergedContext, baseSession?.widgets),
     contextUnderstanding: mergedContext
   };
 }

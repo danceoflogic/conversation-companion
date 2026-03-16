@@ -232,6 +232,31 @@ body {
   gap: 16px;
 }
 
+
+#widgets {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.widget {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.widget h3 {
+  margin-top: 0;
+}
+
+.widget ul,
+.widget ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
 button {
   background: var(--accent);
   color: white;
@@ -373,39 +398,6 @@ button:disabled {
     left: 12px;
     width: auto;
     max-height: calc(100vh - 24px);
-  }
-  .concept-panel-header {
-    flex-direction: column;
-    cursor: default;
-  }
-}
-text-card-header { align-items: start; flex-direction: column; }
-  .concept-panel {
-    top: 12px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-    max-height: calc(100vh - 24px);
-  }
-  .concept-panel-header {
-    flex-direction: column;
-    cursor: default;
-  }
-}
-umn; }
-  .concept-panel {
-    top: 12px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-    max-height: calc(100vh - 24px);
-  }
-  .concept-panel-header {
-    flex-direction: column;
-    cursor: default;
-  }
-}
-24px);
   }
   .concept-panel-header {
     flex-direction: column;

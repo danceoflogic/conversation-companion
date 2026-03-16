@@ -65,7 +65,50 @@ let conceptPanelState = {
   kind: 'concept'
 };
 let conceptDragState = null;
-let lastSeenCompletedChunkAt = null;
+let captureRequestInFlight = false;
+
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
+}
+
+
+async function parseJsonResponse(response) {
+  const raw = await response.text();
+  if (!raw.trim()) return {};
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error(`Expected JSON response from ${response.url || 'request'} but received invalid payload.`);
+  }
+}
+
+function renderOverviewPanel(mode) {
+  const contextUnderstanding = sessionData?.contextUnderstanding || {};
+  renderConceptPanel({
+    kind: 'overview',
+    mode,
+    concept: 'Context Overview',
+    topic: contextUnderstanding.topic || sessionData?.topic || '—',
+    summary: contextUnderstanding.summary || sessionData?.summary || '—',
+    concepts: contextUnderstanding.concepts || [],
+    questions: contextUnderstanding.questions || [],
+    actionItems: contextUnderstanding.actionItems || [],
+    decisions: contextUnderstanding.decisions || []
+  });
+}
 
 function isFixtureMode() {
   const params = new URLSearchParams(globalThis.location?.search || '');
@@ -94,6 +137,23 @@ function formatContextMeta(contextUnderstanding) {
   return details.join(' · ');
 }
 
+
+
+function formatContextSourceLabel(source) {
+  const text = String(source || '').trim();
+  if (!text) return 'session fallback';
+
+  if (text.startsWith('heuristic fallback after openai')) {
+    return 'heuristic fallback (openai unavailable)';
+  }
+
+  if (text.startsWith('heuristic fallback after ollama')) {
+    return 'heuristic fallback (ollama unavailable)';
+  }
+
+  return text;
+}
+
 function formatContextList(items, emptyLabel) {
   if (!Array.isArray(items) || items.length === 0) {
     return emptyLabel;
@@ -110,8 +170,8 @@ function renderCaptureState() {
   const showStatus = status === 'idle' ? message : `${status.toUpperCase()}: ${message}${detail}`;
 
   captureStatusEl.textContent = showStatus;
-  startListeningBtn.disabled = Boolean(captureState?.running);
-  stopListeningBtn.disabled = !Boolean(captureState?.running);
+  startListeningBtn.disabled = captureRequestInFlight || Boolean(captureState?.running);
+  stopListeningBtn.disabled = captureRequestInFlight || !Boolean(captureState?.running);
 }
 
 function ensureConceptPanelOverlay() {
@@ -143,17 +203,17 @@ function renderConceptPanel(payload) {
       <article class="concept-card concept-card-wide">
         <div class="concept-card-body">
           <p><strong>Topic</strong></p>
-          <p>${payload.topic || '—'}</p>
+          <p>${escapeHtml(payload.topic || '—')}</p>
           <p><strong>Summary</strong></p>
-          <p>${payload.summary || '—'}</p>
+          <p>${escapeHtml(payload.summary || '—')}</p>
           <p><strong>Concepts</strong></p>
-          <p>${(payload.concepts || []).join(' · ') || '—'}</p>
+          <p>${escapeHtml((payload.concepts || []).join(' · ') || '—')}</p>
           <p><strong>Open questions</strong></p>
-          <p>${(payload.questions || []).join(' · ') || '—'}</p>
+          <p>${escapeHtml((payload.questions || []).join(' · ') || '—')}</p>
           <p><strong>Action items</strong></p>
-          <p>${(payload.actionItems || []).join(' · ') || '—'}</p>
+          <p>${escapeHtml((payload.actionItems || []).join(' · ') || '—')}</p>
           <p><strong>Decisions</strong></p>
-          <p>${(payload.decisions || []).join(' · ') || '—'}</p>
+          <p>${escapeHtml((payload.decisions || []).join(' · ') || '—')}</p>
         </div>
       </article>
     `;
@@ -161,16 +221,18 @@ function renderConceptPanel(payload) {
   }
 
   if (!Array.isArray(payload.images) || payload.images.length === 0) {
-    conceptPanelImagesEl.innerHTML = '<p class="muted">No images found for this concept yet.</p>';
+    conceptPanelImagesEl.innerHTML = payload.textFirst
+      ? '<p class="muted">Text-first concept view: this item is too broad for reliable image matching right now.</p>'
+      : '<p class="muted">No images found for this concept yet.</p>';
     return;
   }
 
   conceptPanelImagesEl.innerHTML = payload.images.map((image) => `
     <article class="concept-card">
-      <img src="${image.url}" alt="${image.title || payload.concept}" loading="lazy" />
+      <img src="${escapeAttr(image.url)}" alt="${escapeAttr(image.title || payload.concept)}" loading="lazy" />
       <div class="concept-card-body">
-        <p><strong>${image.title || payload.concept}</strong></p>
-        <p class="muted">${image.source || ''}</p>
+        <p><strong>${escapeHtml(image.title || payload.concept)}</strong></p>
+        <p class="muted">${escapeHtml(image.source || '')}</p>
       </div>
     </article>
   `).join('');
@@ -178,27 +240,22 @@ function renderConceptPanel(payload) {
 
 async function openConceptPanel(concept, mode = conceptPanelState.mode || 'found', kind = 'concept') {
   conceptPanelState = { concept, mode, kind };
+
+  if (kind === 'overview' && mode === 'found') {
+    renderOverviewPanel(mode);
+    return;
+  }
+
   renderConceptPanelLoading(concept, mode);
 
   const response = await fetch(`/api/concept-focus?concept=${encodeURIComponent(concept)}&mode=${encodeURIComponent(mode)}`);
+  const payload = await parseJsonResponse(response);
   if (!response.ok) {
-    throw new Error(`Concept focus request failed with status ${response.status}`);
+    throw new Error(payload?.error || `Concept focus request failed with status ${response.status}`);
   }
-  const payload = await response.json();
 
   if (kind === 'overview') {
-    const contextUnderstanding = sessionData?.contextUnderstanding || {};
-    renderConceptPanel({
-      ...payload,
-      kind: 'overview',
-      concept: 'Context Overview',
-      topic: contextUnderstanding.topic || sessionData?.topic || payload.topic || '—',
-      summary: contextUnderstanding.summary || sessionData?.summary || payload.summary || '—',
-      concepts: contextUnderstanding.concepts || [],
-      questions: contextUnderstanding.questions || [],
-      actionItems: contextUnderstanding.actionItems || [],
-      decisions: contextUnderstanding.decisions || []
-    });
+    renderOverviewPanel(mode);
     return;
   }
 
@@ -240,7 +297,7 @@ function render() {
   contextQuestionsEl.textContent = formatContextList(contextUnderstanding.questions, 'No questions detected yet.');
   contextActionItemsEl.textContent = formatContextList(contextUnderstanding.actionItems, 'No action items yet.');
   contextDecisionsEl.textContent = formatContextList(contextUnderstanding.decisions, 'No decisions captured yet.');
-  contextSourceEl.textContent = contextUnderstanding.source || 'session fallback';
+  contextSourceEl.textContent = formatContextSourceLabel(contextUnderstanding.source || 'session fallback');
   contextMetaEl.textContent = formatContextMeta(contextUnderstanding);
   renderCaptureState();
 
@@ -248,6 +305,9 @@ function render() {
     contextExplorerEl.innerHTML = renderContextExplorer(contextUnderstanding);
   }
   conceptsEl.innerHTML = renderConcepts(contextUnderstanding.concepts || sessionData.concepts || []);
+  widgetsEl.innerHTML = Array.isArray(sessionData.widgets) && sessionData.widgets.length
+    ? sessionData.widgets.map((widget) => renderWidget(widget)).join('')
+    : '<p class="muted">No live widgets yet. Keep talking or ingest a transcript chunk.</p>';
 
   if (validationIssues.length) {
     validationWarningEl.hidden = false;
@@ -302,10 +362,11 @@ async function syncCaptureState() {
     renderCaptureState();
 
     if (captureState?.lastCompletedChunkAt && captureState.lastCompletedChunkAt !== previousCompleted) {
-      lastSeenCompletedChunkAt = captureState.lastCompletedChunkAt;
       await requestHydrate();
     }
-  } catch {
+  } catch (error) {
+    const suffix = error instanceof Error ? ` (${error.message})` : '';
+    captureState = { ...captureState, status: 'error', message: `Capture status unavailable${suffix}` };
     renderCaptureState();
   }
 }
@@ -318,32 +379,48 @@ function handleLoadError(error) {
 }
 
 async function startListening() {
-  const response = await fetch('/api/live-capture/start', { method: 'POST' });
-  const body = await response.json();
-  captureState = body.capture || captureState;
+  captureRequestInFlight = true;
   renderCaptureState();
 
-  if (!response.ok) {
-    await syncCaptureState();
-    throw new Error(body?.error || `Start listening failed with status ${response.status}`);
-  }
+  try {
+    const response = await fetch('/api/live-capture/start', { method: 'POST' });
+    const body = await parseJsonResponse(response);
+    captureState = body.capture || captureState;
+    renderCaptureState();
 
-  await requestHydrate();
-  await syncCaptureState();
+    if (!response.ok) {
+      await syncCaptureState();
+      throw new Error(body?.error || `Start listening failed with status ${response.status}`);
+    }
+
+    await requestHydrate();
+    await syncCaptureState();
+  } finally {
+    captureRequestInFlight = false;
+    renderCaptureState();
+  }
 }
 
 async function stopListening() {
-  const response = await fetch('/api/live-capture/stop', { method: 'POST' });
-  const body = await response.json();
-  captureState = body.capture || captureState;
+  captureRequestInFlight = true;
   renderCaptureState();
 
-  if (!response.ok) {
-    await syncCaptureState();
-    throw new Error(body?.error || `Stop listening failed with status ${response.status}`);
-  }
+  try {
+    const response = await fetch('/api/live-capture/stop', { method: 'POST' });
+    const body = await parseJsonResponse(response);
+    captureState = body.capture || captureState;
+    renderCaptureState();
 
-  await syncCaptureState();
+    if (!response.ok) {
+      await syncCaptureState();
+      throw new Error(body?.error || `Stop listening failed with status ${response.status}`);
+    }
+
+    await syncCaptureState();
+  } finally {
+    captureRequestInFlight = false;
+    renderCaptureState();
+  }
 }
 
 async function clearLiveTranscript() {
@@ -352,6 +429,7 @@ async function clearLiveTranscript() {
     throw new Error(`Clear transcript failed with status ${response.status}`);
   }
   await requestHydrate();
+  await syncCaptureState();
 }
 
 startListeningBtn.addEventListener('click', () => startListening().catch(handleLoadError));
@@ -436,4 +514,3 @@ Promise.all([fetchCaptureStatus(), requestHydrate()])
     renderCaptureState();
   })
   .catch(handleLoadError);
-(handleLoadError);
