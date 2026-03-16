@@ -1,0 +1,103 @@
+{
+  "session": {
+    "id": "demo-session-001",
+    "mode": "study",
+    "title": "Quadratic Equations Tutoring Demo",
+    "updatedAt": "2026-03-14T14:02:00Z",
+    "status": "listening",
+    "latencyMs": 1400,
+    "providerMode": "mock"
+  },
+  "summary": "The tutor and student are discussing how to solve quadratic equations by factorisation, how roots relate to the graph crossing the x-axis, and when other methods like the quadratic formula become useful.",
+  "topic": "Quadratic Equations",
+  "concepts": [
+    "factorisation",
+    "roots",
+    "parabola",
+    "x-intercepts",
+    "quadratic formula"
+  ],
+  "timeline": [
+    {
+      "time": "00:04",
+      "speaker": "Tutor",
+      "text": "Let's look at x squared plus five x plus six equals zero and see if we can factorise it.",
+      "summary": "Tutor introduces a factorisation example.",
+      "widgets": ["glossary", "worked_example"]
+    },
+    {
+      "time": "00:11",
+      "speaker": "Student",
+      "text": "So I need two numbers that multiply to six and add to five.",
+      "summary": "Student identifies the factor pair strategy.",
+      "widgets": ["worked_example", "common_mistakes"]
+    },
+    {
+      "time": "00:17",
+      "speaker": "Tutor",
+      "text": "Exactly, and once we have the factors we can see the roots straight away.",
+      "summary": "Tutor links factors to roots.",
+      "widgets": ["glossary", "follow_up_questions"]
+    },
+    {
+      "time": "00:24",
+      "speaker": "Student",
+      "text": "Are the roots the same as where the graph crosses the x-axis?",
+      "summary": "Student connects algebra to graph interpretation.",
+      "widgets": ["follow_up_questions", "quiz"]
+    },
+    {
+      "time": "00:31",
+      "speaker": "Tutor",
+      "text": "Yes, the roots are the x-intercepts, and if factorising is awkward we can switch to the quadratic formula.",
+      "summary": "Tutor confirms graphical meaning and introduces an alternative method.",
+      "widgets": ["glossary", "quiz", "follow_up_questions"]
+    }
+  ],
+  "widgets": [
+    {
+      "type": "glossary",
+      "title": "Key Terms",
+      "items": [
+        { "term": "Root", "definition": "A value of x that makes the quadratic equal zero." },
+        { "term": "Factorisation", "definition": "Rewriting an expression as a product of brackets." },
+        { "term": "x-intercept", "definition": "A point where the graph crosses the x-axis." }
+      ]
+    },
+    {
+      "type": "worked_example",
+      "title": "Worked Example",
+      "problem": "x² + 5x + 6 = 0",
+      "steps": [
+        "Find two numbers that multiply to 6 and add to 5.",
+        "Those numbers are 2 and 3.",
+        "Rewrite as (x + 2)(x + 3) = 0.",
+        "Therefore x = -2 or x = -3."
+      ]
+    },
+    {
+      "type": "common_mistakes",
+      "title": "Common Mistakes",
+      "items": [
+        "Using numbers that multiply correctly but do not add correctly.",
+        "Forgetting to set each bracket equal to zero.",
+        "Dropping the sign when writing the roots."
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Quick Check",
+      "question": "Factorise x² + 7x + 12 = 0",
+      "answer": "(x + 3)(x + 4) = 0"
+    },
+    {
+      "type": "follow_up_questions",
+      "title": "Useful Follow-Ups",
+      "items": [
+        "How do the roots appear on the graph?",
+        "What happens when a quadratic cannot be factorised neatly?",
+        "When would you use the quadratic formula instead?"
+      ]
+    }
+  ]
+}

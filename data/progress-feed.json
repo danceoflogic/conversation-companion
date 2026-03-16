@@ -1,0 +1,68 @@
+{
+  "projectPath": "/home/stduser/.openclaw/workspace/conversation-companion",
+  "scannedAt": "2026-03-15T20:54:06.387Z",
+  "executionState": "active",
+  "currentTask": "Repairing reporting visibility so the dashboard shows real filesystem activity and recent code changes.",
+  "latestChanges": [
+    {
+      "time": "2026-03-15T20:51:38.723Z",
+      "file": ".env.local",
+      "summary": "Auto-detected file activity · 613 bytes"
+    },
+    {
+      "time": "2026-03-15T20:48:26.072Z",
+      "file": "data/local-transcript-ingestion.json",
+      "summary": "Auto-detected file activity · 412 bytes"
+    },
+    {
+      "time": "2026-03-15T20:48:25.775Z",
+      "file": "captures/ingest-run/live-capture-1773607685951.txt",
+      "summary": "Auto-detected file activity · 80 bytes"
+    },
+    {
+      "time": "2026-03-15T20:48:14.062Z",
+      "file": "captures/ingest-run/live-capture-1773607685951.wav",
+      "summary": "Auto-detected file activity · 179528 bytes"
+    },
+    {
+      "time": "2026-03-15T20:47:51.533Z",
+      "file": "scripts/capture-transcribe-ingest.sh",
+      "summary": "Auto-detected file activity · 3581 bytes"
+    },
+    {
+      "time": "2026-03-15T20:46:41.179Z",
+      "file": "captures/ingest-run/live-capture-1773604116987.txt",
+      "summary": "Auto-detected file activity · 41 bytes"
+    },
+    {
+      "time": "2026-03-15T20:01:44.749Z",
+      "file": "captures/ingest-run/live-capture-1773604889011.txt",
+      "summary": "Auto-detected file activity · 0 bytes"
+    },
+    {
+      "time": "2026-03-15T20:01:31.022Z",
+      "file": "captures/ingest-run/live-capture-1773604889011.wav",
+      "summary": "Auto-detected file activity · 0 bytes"
+    },
+    {
+      "time": "2026-03-15T20:01:11.693Z",
+      "file": "server/dev-server.js",
+      "summary": "Auto-detected file activity · 15585 bytes"
+    },
+    {
+      "time": "2026-03-15T19:58:26.796Z",
+      "file": "vendor/whisper.cpp/build/bin/whisper-server",
+      "summary": "Auto-detected file activity · 1304920 bytes"
+    },
+    {
+      "time": "2026-03-15T19:58:26.792Z",
+      "file": "vendor/whisper.cpp/build/examples/server/CMakeFiles/whisper-server.dir/link.d",
+      "summary": "Auto-detected file activity · 4036 bytes"
+    },
+    {
+      "time": "2026-03-15T19:58:26.547Z",
+      "file": "vendor/whisper.cpp/build/examples/server/CMakeFiles/whisper-server.dir/server.cpp.o",
+      "summary": "Auto-detected file activity · 1028376 bytes"
+    }
+  ]
+}

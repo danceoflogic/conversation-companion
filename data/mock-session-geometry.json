@@ -1,0 +1,87 @@
+{
+  "session": {
+    "id": "demo-session-geometry-001",
+    "mode": "study",
+    "title": "Circle Theorems Tutoring Demo",
+    "updatedAt": "2026-03-14T19:22:00Z",
+    "status": "listening",
+    "latencyMs": 1250,
+    "providerMode": "mock"
+  },
+  "summary": "The tutor and student are discussing circle theorems, especially angles in the same segment, tangents, and radii meeting tangents at right angles.",
+  "topic": "Circle Theorems",
+  "concepts": [
+    "angle in the same segment",
+    "tangent",
+    "radius",
+    "chord",
+    "cyclic geometry"
+  ],
+  "timeline": [
+    {
+      "time": "00:03",
+      "speaker": "Tutor",
+      "text": "Let's start with the angle in the same segment theorem.",
+      "summary": "Tutor introduces the core theorem.",
+      "widgets": ["glossary", "worked_example"]
+    },
+    {
+      "time": "00:10",
+      "speaker": "Student",
+      "text": "So if both angles stand on the same chord they must be equal?",
+      "summary": "Student checks the equal-angle relationship.",
+      "widgets": ["follow_up_questions", "common_mistakes"]
+    },
+    {
+      "time": "00:18",
+      "speaker": "Tutor",
+      "text": "Exactly, and remember the radius meets the tangent at ninety degrees.",
+      "summary": "Tutor links tangent-radius rule into the discussion.",
+      "widgets": ["glossary", "quiz"]
+    }
+  ],
+  "widgets": [
+    {
+      "type": "glossary",
+      "title": "Key Terms",
+      "items": [
+        { "term": "Chord", "definition": "A line segment joining two points on a circle." },
+        { "term": "Tangent", "definition": "A straight line that touches the circle at exactly one point." }
+      ]
+    },
+    {
+      "type": "worked_example",
+      "title": "Worked Example",
+      "problem": "Two angles stand on the same chord AB. One angle is 52°. Find the other.",
+      "steps": [
+        "Identify that both angles subtend the same chord.",
+        "Apply the same segment theorem.",
+        "Therefore the second angle is also 52°."
+      ]
+    },
+    {
+      "type": "common_mistakes",
+      "title": "Common Mistakes",
+      "items": [
+        "Using the theorem when the angles do not stand on the same chord.",
+        "Forgetting that tangent-radius gives a right angle.",
+        "Mixing up same-segment and alternate-segment results."
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Quick Check",
+      "question": "What angle is formed between a tangent and the radius at the point of contact?",
+      "answer": "90°"
+    },
+    {
+      "type": "follow_up_questions",
+      "title": "Useful Follow-Ups",
+      "items": [
+        "When can you use the alternate segment theorem?",
+        "How do cyclic quadrilaterals connect to circle theorems?",
+        "What clues tell you two angles stand on the same chord?"
+      ]
+    }
+  ]
+}

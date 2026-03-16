@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="30" />
+  <title>Conversation Companion — Progress Dashboard</title>
+  <style>
+    :root {
+      --bg: #0a0f1f;
+      --panel: #121933;
+      --panel-2: #182245;
+      --panel-3: #0e1430;
+      --text: #edf2ff;
+      --muted: #aeb9dc;
+      --accent: #7c9cff;
+      --accent-2: #b67cff;
+      --good: #39d39f;
+      --warn: #ffca6a;
+      --bad: #ff7f9f;
+      --line: #2a3767;
+      --shadow: 0 14px 34px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(124,156,255,.14), transparent 24%),
+        radial-gradient(circle at top left, rgba(182,124,255,.12), transparent 28%),
+        linear-gradient(180deg, #09101f 0%, #101735 100%);
+      padding: 24px;
+    }
+    .wrap { max-width: 1220px; margin: 0 auto; }
+    .hero, .card {
+      background: rgba(18, 25, 51, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+    .hero { padding: 28px; margin-bottom: 18px; }
+    .row, .grid-2, .grid-3, .grid-4 {
+      display: grid;
+      gap: 18px;
+    }
+    .grid-2 { grid-template-columns: 1.25fr .75fr; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .card { padding: 20px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 2.1rem; margin-bottom: 10px; }
+    h2 { font-size: 1.05rem; margin-bottom: 12px; }
+    h3 { font-size: .95rem; margin-bottom: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .muted { color: var(--muted); }
+    .pill {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-size: .92rem;
+    }
+    .metrics {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .metric {
+      background: var(--panel-3);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 170px;
+      flex: 1 1 180px;
+    }
+    .metric .label { color: var(--muted); font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; }
+    .metric .value { font-size: 1.5rem; font-weight: 800; margin-top: 6px; }
+    .progress {
+      width: 100%;
+      height: 14px;
+      background: #0d1430;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+    .bar {
+      height: 100%;
+      width: 18%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      position: relative;
+    }
+    .bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+      animation: sweep 2.4s linear infinite;
+    }
+    @keyframes sweep {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    ul { padding-left: 20px; }
+    li { margin: 8px 0; }
+    .status {
+      font-weight: 800;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      border: 1px solid var(--line);
+    }
+    .done { color: var(--good); background: rgba(57,211,159,.08); }
+    .live { color: var(--warn); background: rgba(255,202,106,.08); }
+    .next { color: var(--muted); background: rgba(174,185,220,.08); }
+    .risk { color: var(--bad); background: rgba(255,127,159,.08); }
+    .small { font-size: .9rem; }
+    .timeline { list-style: none; padding: 0; margin: 0; }
+    .timeline li {
+      padding: 12px 0 12px 18px;
+      border-left: 2px solid var(--line);
+      position: relative;
+      margin: 0;
+    }
+    .timeline li::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 18px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(124,156,255,.12);
+    }
+    code {
+      background: #0d1430;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 2px 6px;
+      color: #d9e5ff;
+    }
+    .feed-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .feed-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .feed-item:last-child {
+      border-bottom: 0;
+    }
+    .feed-file {
+      font-weight: 700;
+    }
+    .feed-time {
+      color: var(--muted);
+      font-size: .88rem;
+      margin-top: 4px;
+    }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .88rem;
+      margin-top: 18px;
+    }
+    .active-indicator {
+      color: var(--good);
+      font-weight: 700;
+    }
+    .waiting-indicator {
+      color: var(--warn);
+      font-weight: 700;
+    }
+    @media (max-width: 980px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Conversation Companion — Progress Dashboard</h1>
+      <p class="muted">A live-at-a-glance project view for planning, delivery, safety posture, and implementation progress.</p>
+      <div>
+        <span class="pill">Current phase: <strong>Phase 1 — Foundation / Prototype</strong></span>
+        <span class="pill">Current milestone: <strong>M1 — Scaffolding</strong></span>
+        <span class="pill">Target version: <strong>0.1.0</strong></span>
+        <span class="pill">Method: <strong>Agile / milestone gated</strong></span>
+        <span class="pill">Dev server: <strong>http://127.0.0.1:3088</strong></span>
+      </div>
+      <div class="progress" aria-label="overall progress">
+        <div class="bar"></div>
+      </div>
+      <p class="small muted"><strong>Overall progress:</strong> 31% — planning pack complete, dashboard upgraded, project scaffold created, prototype server running, and live-like mock session behaviour added.</p>
+
+      <div class="metrics">
+        <div class="metric"><div class="label">Project health</div><div class="value">Green</div></div>
+        <div class="metric"><div class="label">Completed artifacts</div><div class="value">16</div></div>
+        <div class="metric"><div class="label">Execution state</div><div class="value active-indicator">Active</div></div>
+        <div class="metric"><div class="label">Immediate focus</div><div class="value">Prototype UI</div></div>
+      </div>
+    </section>
+
+    <section class="grid-4" style="margin-bottom:18px;">
+      <div class="card">
+        <h3>Current task</h3>
+        <p>Advance the prototype from static demo into a more realistic session flow with staged transcript activity and richer app state.</p>
+      </div>
+      <div class="card">
+        <h3>Last completed</h3>
+        <p>Simulated live transcript progression, activity panel, richer mock session contract, and updated project tracking artifacts.</p>
+      </div>
+      <div class="card">
+        <h3>Next milestone gate</h3>
+        <p>Local app boots cleanly and renders transcript-driven widgets from fixtures.</p>
+      </div>
+      <div class="card">
+        <h3>Blocked status</h3>
+        <p><span class="active-indicator">Not blocked</span> — active development continuing without user input.</p>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Status by Workstream</h2>
+        <table>
+          <tr><th>Workstream</th><th>Status</th><th>Comment</th></tr>
+          <tr><td>Product definition</td><td><span class="status done">Complete</span></td><td>Discovery pack and core scope established.</td></tr>
+          <tr><td>Safety & privacy</td><td><span class="status done">Complete</span></td><td>Consent-first baseline documented before build work.</td></tr>
+          <tr><td>Versioning / release</td><td><span class="status done">Complete</span></td><td>SemVer and milestone gates defined.</td></tr>
+          <tr><td>Progress reporting</td><td><span class="status done">Complete</span></td><td>HTML dashboard created and now expanded.</td></tr>
+          <tr><td>Engineering scaffold</td><td><span class="status done">Complete</span></td><td>Package metadata, scripts, structure checks, and local server created.</td></tr>
+          <tr><td>Mock transcript pipeline</td><td><span class="status live">In progress</span></td><td>Fixture-driven prototype is up and serving a tutoring demo session.</td></tr>
+          <tr><td>Live audio integration</td><td><span class="status next">Planned</span></td><td>Phase 2 after shell and schemas are stable.</td></tr>
+          <tr><td>Operational risk review</td><td><span class="status risk">Ongoing</span></td><td>Must guard against surveillance-style misuse.</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Currently Working On</h2>
+        <ul>
+          <li>Preparing typed schema modules from the documented mock contracts.</li>
+          <li>Improving widget logic and prototype interaction quality.</li>
+          <li>Shaping the handoff path from mock mode to real transcript ingestion.</li>
+          <li>Keeping reporting artifacts current as the build progresses.</li>
+        </ul>
+        <h2 style="margin-top:18px;">Immediate Next Up</h2>
+        <ul>
+          <li>Create shared schema modules for transcript and widget payloads.</li>
+          <li>Add a proper session data layer instead of direct raw payload rendering.</li>
+          <li>Prepare the first audio capture integration spike.</li>
+          <li>Document release notes and increment the prototype baseline cleanly.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="grid-3" style="margin-top:18px;">
+      <div class="card">
+        <h2>Phase Progress</h2>
+        <table>
+          <tr><th>Phase</th><th>Progress</th><th>Status</th></tr>
+          <tr><td>P0 — Discovery</td><td>100%</td><td><span class="status done">Complete</span></td></tr>
+          <tr><td>P1 — Foundation</td><td>40%</td><td><span class="status live">Active</span></td></tr>
+          <tr><td>P2 — Audio / Transcript</td><td>0%</td><td><span class="status next">Queued</span></td></tr>
+          <tr><td>P3 — Context Engine</td><td>0%</td><td><span class="status next">Queued</span></td></tr>
+          <tr><td>P4 — Tutoring MVP</td><td>0%</td><td><span class="status next">Planned</span></td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Agile Tracking</h2>
+        <table>
+          <tr><th>Item</th><th>Value</th></tr>
+          <tr><td>Current sprint theme</td><td>Foundation and scaffolding</td></tr>
+          <tr><td>Definition of done</td><td>Runnable shell + docs + scripts + schema baseline</td></tr>
+          <tr><td>Target release</td><td>0.1.0</td></tr>
+          <tr><td>Branching approach</td><td>Main + feature branches</td></tr>
+          <tr><td>Execution state</td><td class="active-indicator">Active — not waiting on user</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Decision Log</h2>
+        <ul class="timeline">
+          <li><strong>Scope narrowed</strong><br><span class="muted small">Start with study/tutoring companion, not universal ambient intelligence.</span></li>
+          <li><strong>Safety baseline adopted</strong><br><span class="muted small">Visible listening, no covert monitoring, no hidden background mode.</span></li>
+          <li><strong>Desktop-first MVP</strong><br><span class="muted small">Chosen as the most practical early delivery path.</span></li>
+          <li><strong>Structured outputs</strong><br><span class="muted small">Widget JSON contracts will drive UI deterministically.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h2>Activity / Blocker Monitor</h2>
+      <table>
+        <tr><th>Signal</th><th>Value</th><th>Meaning</th></tr>
+        <tr><td>Execution state</td><td class="active-indicator">Active</td><td>Work is continuing autonomously.</td></tr>
+        <tr><td>Blocked by user?</td><td>No</td><td>No pending approvals or decisions currently stopping work.</td></tr>
+        <tr><td>Safe parallel work plan</td><td>Enabled</td><td>If blocked later, switch to docs, UX, QA, and support artifacts.</td></tr>
+        <tr><td>Latest verified runtime</td><td>Dev server live</td><td>Prototype remains available locally at <code>http://127.0.0.1:3088</code>.</td></tr>
+      </table>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h2>Milestones</h2>
+      <table>
+        <tr><th>Milestone</th><th>Version</th><th>Status</th><th>Description</th></tr>
+        <tr><td>M0 — Discovery pack</td><td>0.0.1</td><td><span class="status done">Done</span></td><td>Core planning artifacts complete.</td></tr>
+        <tr><td>M1 — Scaffolding</td><td>0.1.0</td><td><span class="status live">Active</span></td><td>App shell, scripts, schema contracts, fixture renderer.</td></tr>
+        <tr><td>M2 — Audio to transcript</td><td>0.2.0</td><td><span class="status next">Queued</span></td><td>Microphone capture and transcription loop.</td></tr>
+        <tr><td>M3 — Context engine</td><td>0.3.0</td><td><span class="status next">Queued</span></td><td>Topic extraction and live widget orchestration.</td></tr>
+        <tr><td>M4 — Tutoring MVP</td><td>0.5.0</td><td><span class="status next">Planned</span></td><td>Reliable end-to-end tutoring workflow.</td></tr>
+      </table>
+    </section>
+
+    <section class="grid-2" style="margin-top:18px;">
+      <section class="card">
+        <h2>Latest Code / File Changes</h2>
+        <p class="small muted">This panel refreshes from the local progress feed so you can see the most recent implementation work. If you opened this page directly from disk and the feed fails, use <code>http://127.0.0.1:3088/progress-report.html</code> instead.</p>
+        <ul class="feed-list" id="latest-changes-feed">
+          <li class="feed-item">
+            <div class="feed-file">Loading latest changes…</div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Tracked Project Files</h2>
+        <p class="small muted"><strong>Project location:</strong> <code>/home/stduser/.openclaw/workspace/conversation-companion</code></p>
+        <ul>
+          <li><code>README.md</code></li>
+          <li><code>docs/01-project-charter.md</code></li>
+          <li><code>docs/02-swot-analysis.md</code></li>
+          <li><code>docs/03-requirements-prd.md</code></li>
+          <li><code>docs/04-architecture.md</code></li>
+          <li><code>docs/05-safety-privacy.md</code></li>
+          <li><code>docs/06-roadmap.md</code></li>
+          <li><code>docs/07-agile-backlog.md</code></li>
+          <li><code>docs/08-versioning-release-plan.md</code></li>
+          <li><code>progress-report.html</code></li>
+        </ul>
+      </section>
+    </section>
+
+    <p class="footer">Keep this page open as the project cockpit. It auto-refreshes every 30 seconds, and the latest-changes panel also refreshes from the local feed.</p>
+  </div>
+  <script>
+    async function refreshLatestChanges() {
+      try {
+        const res = await fetch('/api/progress-feed', { cache: 'no-store' });
+        const data = await res.json();
+        const feed = document.getElementById('latest-changes-feed');
+        const scanTime = document.getElementById('feed-scan-time');
+        if (!feed) return;
+        if (scanTime) scanTime.textContent = data.scannedAt || data.updatedAt || 'Unknown';
+        feed.innerHTML = (data.latestChanges || []).map((item) => `
+          <li class="feed-item">
+            <div class="feed-file">${item.file}</div>
+            <div>${item.summary}</div>
+            <div class="feed-time">${item.time}</div>
+          </li>
+        `).join('');
+      } catch (error) {
+        const feed = document.getElementById('latest-changes-feed');
+        if (feed) {
+          feed.innerHTML = `<li class="feed-item"><div class="feed-file">Feed unavailable</div><div>${error.message}</div></li>`;
+        }
+      }
+    }
+    refreshLatestChanges();
+    setInterval(refreshLatestChanges, 10000);
+  </script>
+</body>
+</html>

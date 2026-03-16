@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conversation Companion Prototype</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Conversation Companion</h1>
+      <p class="muted">Study / tutoring companion prototype</p>
+    </div>
+    <div class="badges">
+      <span class="badge live" id="session-status">Loading…</span>
+      <span class="badge" id="provider-mode">Mock mode</span>
+      <span class="badge">Prototype v0.1.0</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel summary-panel">
+      <div class="summary-header">
+        <div>
+          <h2 id="topic">Topic</h2>
+          <p id="summary" class="muted"></p>
+        </div>
+        <div class="session-stats">
+          <div><span class="label">Session</span><strong id="session-title">—</strong></div>
+          <div><span class="label">Latency</span><strong id="latency">—</strong></div>
+        </div>
+      </div>
+      <div class="context-card" aria-live="polite">
+        <div class="context-card-header">
+          <h3>Context understanding</h3>
+          <span id="context-source" class="context-source">session fallback</span>
+        </div>
+        <p id="context-meta" class="muted context-meta">0 items</p>
+        <div class="context-grid">
+          <div class="context-field">
+            <span class="label">Detected topic</span>
+            <p id="context-topic">—</p>
+          </div>
+          <div class="context-field">
+            <span class="label">Rolling summary</span>
+            <p id="context-summary" class="muted">Waiting for context.</p>
+          </div>
+          <div class="context-field context-field-wide">
+            <span class="label">Latest utterance</span>
+            <p id="context-latest-utterance" class="muted">Waiting for speech.</p>
+          </div>
+          <div class="context-field">
+            <span class="label">Key concepts</span>
+            <p id="context-concepts" class="muted">Waiting for concepts.</p>
+          </div>
+          <div class="context-field">
+            <span class="label">Open questions</span>
+            <p id="context-questions" class="muted">No questions detected yet.</p>
+          </div>
+          <div class="context-field">
+            <span class="label">Action items</span>
+            <p id="context-action-items" class="muted">No action items yet.</p>
+          </div>
+          <div class="context-field">
+            <span class="label">Decisions</span>
+            <p id="context-decisions" class="muted">No decisions captured yet.</p>
+          </div>
+        </div>
+      </div>
+      <div id="validation-warning" class="validation-warning" hidden>
+        <h3>Validation warnings</h3>
+        <ul id="validation-warning-list"></ul>
+      </div>
+      <div>
+        <h3>Context Explorer</h3>
+        <div id="context-explorer" class="chips"></div>
+      </div>
+      <div>
+        <h3>Concepts</h3>
+        <div id="concepts" class="chips"></div>
+      </div>
+      <div class="controls">
+        <button id="start-listening">Start Listening</button>
+        <button id="stop-listening">Stop Listening</button>
+        <button id="clear-live-transcript">Clear Live Transcript</button>
+      </div>
+      <p id="capture-status" class="muted">Capture idle.</p>
+    </section>
+
+    <section id="transcript-panel" class="panel transcript-panel">
+      <div class="transcript-panel-header">
+        <div>
+          <h2>Live Transcript</h2>
+          <p id="transcript-collapsed-preview" class="muted transcript-collapsed-preview">No transcript yet.</p>
+        </div>
+        <button id="toggle-transcript" type="button">Collapse</button>
+      </div>
+      <div id="transcript"></div>
+    </section>
+
+  </main>
+
+  <section id="concept-panel" class="concept-panel" hidden>
+    <div id="concept-panel-header" class="concept-panel-header">
+      <div>
+        <p id="concept-panel-mode" class="muted concept-panel-mode">Found by AI</p>
+        <h3 id="concept-panel-title">Concept</h3>
+      </div>
+      <div class="concept-panel-actions">
+        <button id="concept-mode-found" type="button">Found by AI</button>
+        <button id="concept-mode-generated" type="button">Generated Images</button>
+        <button id="concept-panel-close" type="button">Close</button>
+      </div>
+    </div>
+    <p id="concept-panel-summary" class="muted">Choose a concept to explore it.</p>
+    <div id="concept-panel-images" class="concept-panel-images"></div>
+  </section>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

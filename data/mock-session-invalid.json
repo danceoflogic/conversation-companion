@@ -1,0 +1,19 @@
+{
+  "session": {
+    "id": "demo-session-invalid",
+    "mode": "study",
+    "title": "Broken Fixture",
+    "status": "listening",
+    "latencyMs": 999,
+    "providerMode": "mock"
+  },
+  "summary": "This fixture intentionally violates the expected contract.",
+  "topic": "Broken Session",
+  "concepts": "should-be-an-array",
+  "timeline": {
+    "time": "00:01",
+    "speaker": "System",
+    "text": "This is invalid because timeline should be an array."
+  },
+  "widgets": "also-invalid"
+}
