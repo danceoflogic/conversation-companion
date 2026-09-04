@@ -10,7 +10,7 @@ A privacy-aware application that listens to live spoken conversation, converts s
 Chris
 
 ## Product Lead
-Nyx
+Chris
 
 ## Mission
 Deliver a production-quality application from concept through release using disciplined product management, software engineering process, safety controls, and structured versioning.
